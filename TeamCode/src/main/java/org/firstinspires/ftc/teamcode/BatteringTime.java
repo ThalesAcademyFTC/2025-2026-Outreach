@@ -18,28 +18,29 @@ public class BatteringTime extends OpMode {
     boolean retracting = false;
     boolean retracted = false;
     final int LIFT_POSITION = 0;
-    final int RELEASE_POSITION = 2000;
+    final int RELEASE_POSITION = -2000;
 
     public void init() {
 
-        leftRear = hardwareMap.get(DcMotor.class, "leftRear");
+        leftRear = hardwareMap.get(DcMotor.class, "leftMotor");
         leftRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightRear = hardwareMap.get(DcMotor.class, "rightRear");
-        rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightRear = hardwareMap.get(DcMotor.class, "rightMotor");
         rightRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
         ramMotor = hardwareMap.get(DcMotorEx.class, "ramMotor");
         ramMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // lift ram until it stops and reset/zero the motor position
-        ramMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         ramMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        ramMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         int newPosition = -10000;
         int position = ramMotor.getCurrentPosition();
-        ramMotor.setPower(-0.1);
-        while(Math.abs(newPosition - position) < 2) {
+        ramMotor.setPower(0.3);
+        while(Math.abs(newPosition - position) > 2) {
             position = newPosition;
             try {
-                sleep(200);
+                sleep(400);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -48,7 +49,7 @@ public class BatteringTime extends OpMode {
         ramMotor.setPower(0);
         ramMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         ramMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        retracted = true;
+        retracted = false;
     }
 
     public void loop() {
@@ -61,7 +62,7 @@ public class BatteringTime extends OpMode {
             retracting = true;
             liftRam();
         }
-        if(!retracting && gamepad1.rightBumperWasPressed()) {
+        if(retracted && gamepad1.rightBumperWasPressed()) {
             releaseRam();
             retracted = false;
         }
@@ -74,11 +75,18 @@ public class BatteringTime extends OpMode {
     }
 
     public void liftRam() {
+        ramMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        ramMotor.setPower(0.3);
         ramMotor.setTargetPosition(LIFT_POSITION);
+        ramMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     public void releaseRam() {
-        ramMotor.setTargetPosition(RELEASE_POSITION);
+        //ramMotor.setPower(-1.0);
+        //ramMotor.setTargetPosition(RELEASE_POSITION);
+        ramMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        ramMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        ramMotor.setPower(0);
     }
     public void drive(double x, double y) {
         // y=1, x=0  forward
