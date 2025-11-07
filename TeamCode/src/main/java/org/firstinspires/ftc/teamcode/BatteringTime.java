@@ -21,7 +21,6 @@ public class BatteringTime extends OpMode {
     final int RELEASE_POSITION = -2000;
 
     public void init() {
-
         leftRear = hardwareMap.get(DcMotor.class, "leftMotor");
         leftRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
